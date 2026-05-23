@@ -3,7 +3,17 @@
     "I/Q": {
       "command": "${CLAUDE_PLUGIN_ROOT}/bin/iq_bridge",
       "env": {},
-      "autoApprove": [],
+      "autoApprove": [
+        "create_file",
+        "explore",
+        "get_command_info",
+        "get_document_info",
+        "list_files",
+        "open_file",
+        "read_file",
+        "save_file",
+        "write_file"
+      ],
       "description": "MCP server to connect to an Isabelle/jEdit instance and inspect/modify Isabelle theory files, proof states, and session information"
     }
   }
