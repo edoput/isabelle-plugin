@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "I/Q": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/iq_bridge",
+      "env": {},
+      "autoApprove": [],
+      "description": "MCP server to connect to an Isabelle/jEdit instance and inspect/modify Isabelle theory files, proof states, and session information"
+    }
+  }
+}
