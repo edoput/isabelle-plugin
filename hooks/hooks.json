@@ -1,0 +1,63 @@
+{
+  "description": "Prevent common misuse of Isabelle and theories",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__plugin_isabelle-plugin_iq__get_command_info",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/get_command_info"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__filesystem__*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/deny_theory_files"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__plugin_isabelle-plugin_iq__list_files",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/list_files"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__plugin_isabelle-plugin_iq__get_command_info",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/get_command_info"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__plugin_isabelle-plugin_iq__explore",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/explore"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__plugin_isabelle-plugin_iq__read_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/read_file"
+          }
+        ]
+      }
+    ]
+  }
+}

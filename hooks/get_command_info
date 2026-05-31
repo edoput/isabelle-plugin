@@ -1,0 +1,406 @@
+#!/usr/bin/env python3
+
+"""
+Prevent misuse of the get_command_info tool from I/Q.
+
+This hook is triggered before and after usage of the get_command_info tool from I/Q.
+
+Before a call we enforce the parameters to get back results from the MCP.
+After a call to get_command_info we rewrite the output JSON to be a summary.
+"""
+
+import io
+import json
+import sys
+
+from enum import StrEnum, auto
+from dataclasses import dataclass
+
+"""
+Tool input argument manipulation
+"""
+
+class Mode(StrEnum):
+    LINE = "line"
+    CURRENT = "current"
+
+@dataclass
+class GetCommandInfoRequest:
+    # required
+    mode: Mode
+
+    include_results: bool = False
+    wait_until_processed: bool = False
+    timeout: int = 5000 # ms
+
+    path: str = ""
+    start_line: int = 1
+    end_line: int = -1
+
+    timeout_per_command: int = 5000 # ms
+    xml_result_file: str = ""
+
+def tool_input(input_data):
+    tool_input = input_data.get("tool_input", {})
+
+    gci = GetCommandInfoRequest(**tool_input)
+
+    out = {
+        "suppressOutput": True, # does not show up in transcript
+    }
+
+    if gci.mode == Mode.LINE:
+        tool_input["include_results"] = True
+        tool_input["xml_result_file"] = "get_command_info.xml"
+        out["hookSpecificOutput"] = {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+            "updatedInput": tool_input,
+            "additionalContext": "Changed include_results to true",
+        }
+
+    json.dump(out, sys.stdout)
+    sys.exit(0)
+
+"""
+Tool output summarization
+"""
+
+class CommandType(StrEnum):
+    THEORY_STRUCTURE = "theory_structure"
+    TYPE_DEFINITION  = "type_definition"
+    DEFINITION       = "definition"
+    STATEMENT        = "statement"
+    PROOF_START      = "proof_start"
+    PROOF_METHOD     = "proof_method"
+    PROOF_END        = "proof_end"
+    OTHER            = "other"
+    UNKNOWN          = "unknown"
+
+    @classmethod
+    def parse(cls, value: str) -> "CommandType":
+        try:
+            return cls(value)
+        except ValueError:
+            return cls.UNKNOWN
+
+class StatusSummary(StrEnum):
+    FINISHED    = "finished"
+    FAILED      = "failed"
+    CANCELED    = "canceled"
+    UNPROCESSED = "unprocessed"
+    UNKNOWN     = "unknown"
+
+    @classmethod
+    def parse(cls, value: str) -> "StatusSummary":
+        try:
+            return cls(value)
+        except ValueError:
+            return cls.UNKNOWN
+
+# ── AST nodes (flat list — no hierarchy needed for syntactic analysis) ──────
+
+@dataclass
+class CommandNode:
+    """Common fields present on every command returned by get_command_info."""
+    command_type: CommandType
+    command_source: str
+    start_line: int
+    end_line: int
+    status: StatusSummary
+    results_text: list[str]
+
+    @staticmethod
+    def from_raw(raw: dict) -> "CommandNode":
+        r = raw.get("range", {})
+        return CommandNode(
+            command_type   = CommandType.parse(raw.get("command_type", "")),
+            command_source = raw.get("command_source", ""),
+            start_line     = r.get("start_line", 0),
+            end_line       = r.get("end_line", 0),
+            status         = StatusSummary.parse(raw.get("status", {}).get("status_summary", "")),
+            results_text   = raw.get("results_text", []),
+        )
+
+    @property
+    def failed(self) -> bool:
+        return self.status == StatusSummary.FAILED
+
+    def first_word(self) -> str:
+        parts = self.command_source.split()
+        return parts[0] if parts else ""
+
+    def second_word(self) -> str:
+        parts = self.command_source.split()
+        return parts[1].rstrip(":") if len(parts) > 1 else ""
+
+
+# ── Dynamic dispatcher ───────────────────────────────────────────────────────
+
+class CommandConsumer:
+    """
+    Visits each CommandNode in sequence by dispatching to on_<command_type>.
+    Subclass and override the on_* methods to build analysis passes.
+    """
+
+    def consume(self, content: list[dict]) -> None:
+        for raw in content:
+            node = CommandNode.from_raw(raw)
+            handler_name = "on_" + node.command_type.replace(" ", "_")
+            handler = getattr(self, handler_name, self.on_unknown)
+            handler(node)
+
+    def on_unknown(self, node: CommandNode) -> None:
+        pass
+
+
+# classified as CommandType.OTHER
+DECL_KEYWORDS: frozenset[str] = frozenset({
+    "abbreviation",
+    "class",
+    "coinductive",
+    "corec",
+    "declare",
+    "fun",
+    "function",
+    "global_interpretation",
+    "inductive",
+    "instance",
+    "instantiation",
+    "interpretation",
+    "locale",
+    "notation",
+    "primcorec",
+    "sublocale",
+})
+
+class ErrorKind(StrEnum):
+    SORRY = auto()
+    DECLARATION = auto()
+    STATEMENT = auto()
+    PROOF_RULE = auto()
+    TACTIC = auto()
+    UNKNOWN = auto()
+
+    @classmethod
+    def parse(cls, value: str) -> "ErrorKind":
+        try:
+            return cls(value)
+        except ValueError:
+            return cls.UNKNOWN
+
+@dataclass
+class ErrorEntry:
+    kind: ErrorKind
+    context_kind: str   # e.g. "lemma", "primcorec", "definition"
+    context_name: str   # e.g. "ctrace_of_phantomP_false"
+    line: int
+    snippet: str        # first ~50 chars of the triggering source, newlines collapsed
+    messages: list[str] # error messages from results_text
+
+
+class ErrorReporter(CommandConsumer):
+
+    def __init__(self) -> None:
+        self._ctx_kind: str = "theory"
+        self._ctx_name: str = ""
+        self._proof_depth: int = 0
+        self._stmt_failed: bool = False      # suppress cascades inside a failed statement
+        self._first_tactic_seen: bool = False
+        self.entries: list[ErrorEntry] = []
+
+    def _set_context(self, kind: str, name: str) -> None:
+        self._ctx_kind = kind
+        self._ctx_name = name
+        self._stmt_failed = False
+        self._first_tactic_seen = False
+
+    def _entry(self, kind: str, node: CommandNode) -> ErrorEntry:
+        return ErrorEntry(
+            kind=ErrorKind.parse(kind),
+            context_kind=self._ctx_kind,
+            context_name=self._ctx_name,
+            line=node.start_line,
+            snippet=node.command_source[:50].replace("\n", " "),
+            messages=node.results_text,
+        )
+
+    def on_theory_structure(self, node: CommandNode) -> None:
+        self._set_context("theory", node.second_word())
+
+    def on_type_definition(self, node: CommandNode) -> None:
+        self._set_context(node.first_word(), node.second_word())
+        if node.failed:
+            self.entries.append(self._entry("declaration", node))
+
+    def on_definition(self, node: CommandNode) -> None:
+        self._set_context(node.first_word(), node.second_word())
+        if node.failed:
+            self.entries.append(self._entry("declaration", node))
+
+    def on_statement(self, node: CommandNode) -> None:
+        self._set_context(node.first_word(), node.second_word())
+        if node.failed:
+            self._stmt_failed = True
+            self.entries.append(self._entry("statement", node))
+
+    def on_proof_start(self, node: CommandNode) -> None:
+        self._proof_depth += 1
+        if node.failed and not self._stmt_failed:
+            self.entries.append(self._entry("proof_rule", node))
+
+    def on_proof_method(self, node: CommandNode) -> None:
+        if node.failed and not self._stmt_failed and not self._first_tactic_seen:
+            self.entries.append(self._entry("tactic", node))
+            self._first_tactic_seen = True
+
+    def on_proof_end(self, node: CommandNode) -> None:
+        self._proof_depth = max(0, self._proof_depth - 1)
+        if self._proof_depth == 0:
+            self._stmt_failed = False
+            self._first_tactic_seen = False
+
+    def on_other(self, node: CommandNode) -> None:
+        if node.command_source.startswith("sorry"):
+            self.entries.append(self._entry("sorry", node))
+            return
+        kw = node.first_word()
+        if kw in DECL_KEYWORDS:
+            self._set_context(kw, node.second_word())
+            if node.failed:
+                self.entries.append(self._entry("declaration", node))
+
+    def report(self, summary: dict) -> str:
+        failed = summary.get("commands_failed", 0)
+        total  = summary.get("total_commands", 0)
+        sorries = [e for e in self.entries if e.kind == "sorry"]
+        errors  = [e for e in self.entries if e.kind != "sorry"]
+
+        with io.StringIO() as buf:
+            buf.write(f"{failed} commands failed · {len(sorries)} sorry (of {total} total)\n\n")
+            if errors:
+                buf.write("errors\n")
+                for e in errors:
+                    buf.write(f"  {e.kind:12}  {e.context_kind} {e.context_name}  line {e.line}\n")
+                    buf.write(f"               {e.snippet}\n")
+                    for msg in e.messages:
+                        for line in msg.splitlines():
+                            buf.write(f"               {line}\n")
+            if sorries:
+                buf.write("sorry\n")
+                for e in sorries:
+                    buf.write(f"  {e.context_kind} {e.context_name}  line {e.line}\n")
+            return buf.getvalue()
+
+
+# ── Shared: extract the tool-response text from harness input ────────────────
+
+def _load_response_text(input_data: dict) -> str | None:
+    raw = input_data["tool_response"]
+    if isinstance(raw, str):
+        import re
+        m = re.search(r"saved to ([^\n]+\.txt)", raw)
+        if not m:
+            return None
+        with open(m.group(1)) as f:
+            return f.read()
+    return raw[0]["text"]
+
+
+def tool_output(input_data):
+
+    with open("get_command_info.json", "w") as f:
+        json.dump(input_data, f)
+
+    text = _load_response_text(input_data)
+    if text is None:
+        sys.exit(0)
+
+    tool_response = json.loads(text)
+    content = tool_response.get("content", [])
+    summary = tool_response.get("summary", {})
+
+    sorries = []
+    errors = []
+    current_lemma = None
+
+    for cmd in content:
+        if cmd["command_type"] == "statement":
+            current_lemma = cmd["command_source"][:40] # TODO lex
+        if cmd["command_source"].startswith("sorry"):
+            sorries.append({
+                "line": cmd.get("range").get("start_line"),
+                "lemma": current_lemma,
+            })
+        if cmd["command_type"] == "proof_method" and cmd["status"]["status_summary"] == "failed":
+            errors.append({
+                "line": cmd.get("range").get("start_line"),
+                "lemma": current_lemma,
+            })
+
+    with io.StringIO() as buf:
+        failed = summary.get("commands_failed")
+        total = summary.get("total_commands")
+        buf.write(f"{failed} commands failed · {len(sorries)} sorry (of {total} commands)\n")
+        buf.write("sorry locations\n")
+        for sorry in sorries:
+            buf.write(f"- in lemma {sorry['lemma']} at line {sorry['line']}\n")
+        buf.write("error locations\n")
+        for error in errors:
+            buf.write(f"- in lemma {error['lemma']} at line {error['line']}\n")
+        buf.write("\n")
+        message = buf.getvalue()
+
+    out = {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "updatedToolOutput": [ { "type": "text", "text": message } ],
+            "additionalContext": "full command output at get_command_info.json"
+        }
+    }
+    json.dump(out, sys.stdout)
+    sys.exit(0)
+
+
+def tool_output_v2(input_data):
+
+    with open("get_command_info.json", "w") as f:
+        json.dump(input_data, f)
+
+    text = _load_response_text(input_data)
+    if text is None:
+        sys.exit(0)
+
+    tool_response = json.loads(text)
+    content = tool_response.get("content", [])
+    summary = tool_response.get("summary", {})
+
+    reporter = ErrorReporter()
+    reporter.consume(content)
+    message = reporter.report(summary)
+
+    out = {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "updatedToolOutput": [ { "type": "text", "text": message } ],
+            "additionalContext": "full command output at get_command_info.json"
+        }
+    }
+    json.dump(out, sys.stdout)
+    sys.exit(0)
+
+def main():
+    try:
+        input_data = json.loads(sys.stdin.read())
+    except json.JSONDecodeError as e:
+        # TODO turn into structured JSON output
+        print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
+        sys.exit(0) 
+
+    if "tool_response" in input_data:
+        tool_output_v2(input_data)
+    else:
+        tool_input(input_data)
+
+if __name__ == "__main__":
+    main()

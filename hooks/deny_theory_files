@@ -1,0 +1,32 @@
+#! /usr/bin/env python3
+
+"""
+Prevents the agent from reading and writing theory files from the filesystem.
+
+We assume all .thy files are theory files and deny filesystem access to them.
+"""
+
+import json
+import sys
+
+deny_message = '''
+{
+    "hookSpecificOutput" : { "permissionDecision": "deny" },
+    "systemMessage" : "Use the MCP server to interact with theory files."
+}
+'''
+
+def main():
+    try:
+        input_data = json.loads(sys.stdin.read())
+    except json.JSONDecodeError:
+        sys.exit(0)
+    # https://github.com/anthropics/claude-code/blob/main/plugins/plugin-dev/skills/hook-development/examples/validate-write.sh
+    file_path = tool_input.get("file_path")
+    if file_path.endswith("thy"):
+        print(deny_message)
+        sys.exit(2)
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()

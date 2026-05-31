@@ -1,0 +1,26 @@
+{
+  "session_id": "57277d58-74d5-489b-b9b5-a3cf4452562e",
+  "transcript_path": "/home/edoput/.claude/projects/-home-edoput-repo-claude-marketplace-plugins-isabelle-plugin-hooks/57277d58-74d5-489b-b9b5-a3cf4452562e.jsonl",
+  "cwd": "/home/edoput/repo/claude/marketplace/plugins/isabelle-plugin/hooks",
+  "permission_mode": "default",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PostToolUse",
+  "tool_name": "mcp__plugin_isabelle-plugin_iq__explore",
+  "tool_input": {
+    "query": "find_theorems",
+    "command_selection": "file_pattern",
+    "path": "/home/edoput/repo/ctree/Isar_Explore.thy",
+    "pattern": "begin",
+    "arguments": "name:List.append"
+  },
+  "tool_response": [
+    {
+      "type": "text",
+      "text": "{\"success\":true,\"timed_out\":false,\"results\":\"find_theorems\\nname: \\\"List.append\\\"\\n\\nfound 30 theorem(s) (20 displayed):\\nList.append.semigroup_axioms: semigroup (@)\\nList.append.monoid_axioms: monoid (@) []\\nList.append.left_neutral: [] @ ?a = ?a\\nList.append.append_Nil: [] @ ?ys = ?ys\\nList.append.right_neutral: ?a @ [] = ?a\\nList.append_Nil2: ?xs @ [] = ?xs\\nList.append_self_conv: (?xs @ ?ys = ?xs) = (?ys = [])\\nList.append_self_conv2: (?xs @ ?ys = ?ys) = (?xs = [])\\nList.append_take_drop_id: take ?n ?xs @ drop ?n ?xs = ?xs\\nList.append_transfer: rel_fun (list_all2 ?A) (rel_fun (list_all2 ?A) (list_all2 ?A)) (@) (@)\\nList.append_same_eq: (?ys @ ?xs = ?zs @ ?xs) = (?ys = ?zs)\\nList.append.assoc: (?a @ ?b) @ ?c = ?a @ ?b @ ?c\\nList.append_assoc: (?xs @ ?ys) @ ?zs = ?xs @ ?ys @ ?zs\\nList.append.append_Cons: (?x # ?xs) @ ?ys = ?x # ?xs @ ?ys\\nList.append_is_Nil_conv: (?xs @ ?ys = []) = (?xs = [] \u2227 ?ys = [])\\nList.append_in_listsp_conv: listsp ?A (?xs @ ?ys) = (listsp ?A ?xs \u2227 listsp ?A ?ys)\\nList.append_eq_rev_conv: (?ys @ ?zs = rev ?xs) = (rev ?zs @ rev ?ys = ?xs)\\nList.append_replicate_commute: replicate ?n ?x @ replicate ?k ?x = replicate ?k ?x @ replicate ?n ?x\\nList.append_butlast_last_id: ?xs \u2260 [] \u27f9 butlast ?xs @ [last ?xs] = ?xs\\nList.append_in_lists_conv: (?xs @ ?ys \u2208 lists ?A) = (?xs \u2208 lists ?A \u2227 ?ys \u2208 lists ?A)\",\"command_found\":\"theory Isar_Explore\\\\n  imports Main\\\\nbegin\",\"message\":\"Query completed successfully\",\"arguments\":\"name:List.append\"}"
+    }
+  ],
+  "tool_use_id": "toolu_01UcZmcM5ANRg4GbZ37mvVYq",
+  "duration_ms": 518
+}

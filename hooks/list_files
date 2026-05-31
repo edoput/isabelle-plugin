@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+
+"""
+Prevent list_files to dump information in context. Runs as a PostToolUse hook.
+"""
+
+import io
+import json
+import sys
+
+from enum import StrEnum
+from dataclasses import dataclass
+from typing import List
+
+class SortBy(StrEnum):
+    PATH   = "path"
+    THEORY = "theory"
+    TYPE   = "type"
+
+@dataclass
+class ListFilesRequest:
+    filter_open: bool
+    filter_theory: bool
+    sort_by: SortBy
+
+@dataclass
+class Timing:
+    total_seconds: float
+    total_command_count: int
+
+@dataclass
+class File:
+    theory_name: str
+    path: str
+    is_modified: bool
+
+@dataclass
+class ListFilesResponse:
+    files: List[File]
+    path: str
+
+LIST_FILES_JSON = "list_files.json"
+
+def summarize(res : ListFilesResponse):
+    with io.StringIO() as output:
+        output.write("The following theories are loaded:")
+        for t in res.files:
+            output.write("\n")
+            output.write("- ")
+            output.write("[modified]" if t.is_modified else "")
+            output.write(t.theory_name)
+            output.write(" from path ")
+            output.write(t.path)
+
+        output.write("\nFind the full details at " + LIST_FILES_JSON)
+        return output.getvalue()
+
+def main():
+    try:
+        input_data = json.load(sys.stdin)
+    except json.JSONDecodeError as e:
+        # TODO turn into structured JSON output
+        print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
+        sys.exit(0) 
+
+    with open(LIST_FILES_JSON, "w") as out:
+        json.dump(input_data, out)
+
+    tool_name = input_data.get("tool_name", "")
+    tool_input = input_data.get("tool_input", {})
+    tool_response = input_data.get("tool_response")[0]
+
+    response = json.loads(tool_response.get("text", ""))
+
+    files = []
+    for file in response.get("files", []):
+        if file["is_theory"]:
+            files.append(File(theory_name=file["theory_name"], path=file["path"], is_modified=file["is_modified"]))
+
+    response = ListFilesResponse(files, LIST_FILES_JSON)
+
+    out = {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "updatedToolOutput": [ { "type": "text", "text": summarize(response) } ],
+            "additionalContext": f"Saved additional details of open files to {LIST_FILES_JSON}",
+        }
+    }
+    json.dump(out, sys.stdout)
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()

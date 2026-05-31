@@ -1,0 +1,65 @@
+{
+  "files": [
+    {
+      "is_open": false,
+      "timing": { "total_seconds": 5.8, "total_command_count": 214 },
+      "is_in_view": false,
+      "theory_name": "HOL-Cardinals.Wellorder_Relation",
+      "node_name": "HOL-Cardinals.Wellorder_Relation",
+      "path": "/app/src/HOL/Cardinals/Wellorder_Relation.thy",
+      "is_theory": true,
+      "is_modified": false,
+      "is_active_view": false,
+      "content_preview": "",
+      "model_type": "file"
+    },
+    {
+      "is_open": true,
+      "is_in_view": true,
+      "theory_name": "",
+      "node_name": "/home/edoput/repo/ctree/README.md",
+      "path": "/home/edoput/repo/ctree/README.md",
+      "is_theory": false,
+      "is_modified": false,
+      "is_active_view": false,
+      "content_preview": "# choice-trees\n\nThis repository contains a port of the Choice Tree to Isabelle/HOL. Choice trees hav",
+      "model_type": "buffer"
+    },
+    {
+      "is_open": true,
+      "timing": { "total_seconds": 15.6, "total_command_count": 423 },
+      "is_in_view": true,
+      "theory_name": "Draft.ctree_simon_refinement",
+      "node_name": "Draft.ctree_simon_refinement",
+      "path": "/home/edoput/repo/ctree/ctree_simon_refinement.thy",
+      "is_theory": true,
+      "is_modified": false,
+      "is_active_view": false,
+      "content_preview": "theory ctree_simon_refinement\nimports\n  ctree_simon_traces\nbegin\n\nsection ‹Refinement›\n\n(* I want ma",
+      "model_type": "buffer"
+    }
+  ],
+  "total_count": 31,
+  "open_count": 9,
+  "theory_count": 29,
+  "_schema_note": {
+    "file_fields": {
+      "is_open": "boolean — whether the file is open in the editor",
+      "is_in_view": "boolean — whether the file is visible in editor",
+      "is_active_view": "boolean — whether this is the currently focused buffer",
+      "is_theory": "boolean — whether this is an Isabelle .thy file",
+      "is_modified": "boolean — unsaved changes present",
+      "theory_name": "string — qualified theory name e.g. 'Draft.Foo', empty for non-theory files",
+      "node_name": "string — internal Isabelle node name (same as theory_name for theories, path for others)",
+      "path": "string — absolute filesystem path",
+      "content_preview": "string — first ~100 chars of file content",
+      "model_type": "'buffer' (open in editor) | 'file' (loaded by Isabelle but not open)",
+      "timing": "optional — { total_seconds: float, total_command_count: int } — processing stats"
+    },
+    "top_level_fields": {
+      "total_count": "int — total files returned",
+      "open_count": "int — files with is_open=true",
+      "theory_count": "int — files with is_theory=true"
+    }
+  }
+}

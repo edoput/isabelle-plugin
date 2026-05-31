@@ -1,0 +1,140 @@
+{
+    "tool_response": {
+       "files": [ 
+         {
+           "is_open": true,
+           "timing": {
+             "total_seconds": 15.6,
+             "total_command_count": 423
+           },
+           "is_in_view": true,
+           "theory_name": "Draft.ctree_simon_refinement",
+           "node_name": "Draft.ctree_simon_refinement",
+           "path": "/home/edoput/repo/ctree/ctree_simon_refinement.thy",
+           "is_theory": true,
+           "is_modified": false,
+           "is_active_view": false,
+           "content_preview": "theory ctree_simon_refinement\\nimports\\n  ctree_simon_traces\\nbegin\\n\\nsection
+     ‹Refinement›\\n\\n(* I want ma",
+           "model_type": "buffer"
+         },
+         {
+           "is_open": true,
+           "is_in_view": true,
+           "theory_name": "Draft.Scratch",
+           "node_name": "Draft.Scratch",
+           "path": "/home/edoput/Scratch.thy",
+           "is_theory": true,
+           "is_modified": false,
+           "is_active_view": false,
+           "content_preview": "",
+           "model_type": "buffer"
+         },
+         {
+           "is_open": true,
+           "timing": {
+             "total_seconds": 0.5,
+             "total_command_count": 13
+           },
+           "is_in_view": true,
+           "theory_name": "Draft.RefReflMWE",
+           "node_name": "Draft.RefReflMWE",
+           "path": "/home/edoput/repo/ctree/RefReflMWE.thy",
+           "is_theory": true,
+           "is_modified": true,
+           "is_active_view": false,
+           "content_preview": "theory RefReflMWE\\nimports Main\\nbegin\\n\\nsection ‹MWE: non-linear refl rule and Sil
+     interaction›\\ne.\\ntex",
+           "model_type": "buffer"
+         },
+         {
+           "is_open": true,
+           "timing": {
+             "total_seconds": 0.2,
+             "total_command_count": 4
+           },
+           "is_in_view": true,
+           "theory_name": "Draft.Isar_Explore",
+           "node_name": "Draft.Isar_Explore",
+           "path": "/home/edoput/repo/ctree/Isar_Explore.thy",
+           "is_theory": true,
+           "is_modified": false,
+           "is_active_view": false,
+           "content_preview": "(* Original Copyright (c) 1986-2025,\\n            University of Cambridge,\\n
+     Technische Uni",
+           "model_type": "buffer"
+         },
+         {
+           "is_open": true,
+           "timing": {
+             "total_seconds": 49.9,
+             "total_command_count": 301
+           },
+           "is_in_view": true,
+           "theory_name": "Draft.ctree_simon_par_refinement",
+           "node_name": "Draft.ctree_simon_par_refinement",
+           "path": "/home/edoput/repo/ctree/ctree_simon_par_refinement.thy",
+           "is_theory": true,
+           "is_modified": false,
+           "is_active_view": true,
+           "content_preview": "theory ctree_simon_par_refinement\\nimports\\n  ctree_simon_refinement\\nbegin\\n\\nsection
+     ‹Layer 1: Equation",
+           "model_type": "buffer"
+         },
+         {
+           "is_open": true,
+           "timing": {
+             "total_seconds": 23.2,
+             "total_command_count": 448
+           },
+           "is_in_view": true,
+           "theory_name": "Draft.ctree_simon_traces",
+           "node_name": "Draft.ctree_simon_traces",
+           "path": "/home/edoput/repo/ctree/ctree_simon_traces.thy",
+           "is_theory": true,
+           "is_modified": false,
+           "is_active_view": false,
+           "content_preview": "theory ctree_simon_traces\\nimports\\n  ctree_simon_divergence\\nbegin\\n\\nsection ‹Trace
+     type›\\n\\n(* a termina",
+           "model_type": "buffer"
+         },
+         {
+           "is_open": true,
+           "timing": {
+             "total_seconds": 0.1,
+             "total_command_count": 2
+           },
+           "is_in_view": true,
+           "theory_name": "Draft.iq",
+           "node_name": "Draft.iq",
+           "path": "/home/edoput/repo/ctree/iq.thy",
+           "is_theory": true,
+           "is_modified": false,
+           "is_active_view": false,
+           "content_preview": "(* Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.\\n
+     SPDX-License-Identifier: MI",
+           "model_type": "buffer"
+         },
+         {
+           "is_open": true,
+           "timing": {
+             "total_seconds": 12.3,
+             "total_command_count": 502
+           },
+           "is_in_view": true,
+           "theory_name": "Draft.ctree_simon_weak_simulation",
+           "node_name": "Draft.ctree_simon_weak_simulation",
+           "path": "/home/edoput/repo/ctree/ctree_simon_weak_simulation.thy",
+           "is_theory": true,
+           "is_modified": false,
+           "is_active_view": false,
+           "content_preview": "theory ctree_simon_weak_simulation\\nimports\\n  Main\\n  ctree_simon_bounded\\n
+     ctree_simon_refinement\\nbeg",
+           "model_type": "buffer"
+         }
+       ],
+       "total_count": 8,
+       "open_count": 8,
+       "theory_count": 8
+     }
+}

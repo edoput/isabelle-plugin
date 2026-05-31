@@ -1,0 +1,14 @@
+{
+  "name": "mcp__plugin_isabelle-plugin_iq__read_file",
+  "description": "I/Q read_file. Read the content of a file loaded in Isabelle.",
+  "parameters": {
+    "additionalProperties": false,
+    "properties": {
+      "path": {
+        "description": "Absolute path to the file to read. Must be a .thy file currently loaded in Isabelle.",
+        "type": "string"
+      }
+    },
+    "required": ["path"]
+  }
+}

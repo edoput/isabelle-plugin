@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+"""
+Summarize explore tool output and save the latest response to a local file.
+Runs as a PostToolUse hook.
+"""
+
+import io
+import json
+import re
+import sys
+
+EXPLORE_JSON = "explore.json"
+
+def summarize_find_theorems(results: str, arguments: str) -> str:
+    with io.StringIO() as out:
+        # Extract count line e.g. "found 30 theorem(s) (20 displayed):"
+        m = re.search(r"found (\d+) theorem\(s\)(?: \((\d+) displayed\))?", results)
+        if m:
+            total = m.group(1)
+            displayed = m.group(2) or total
+            out.write(f"find_theorems '{arguments}': {total} theorem(s) found ({displayed} displayed)\n")
+        else:
+            out.write(f"find_theorems '{arguments}':\n")
+
+        # Extract theorem name:type lines
+        for line in results.splitlines():
+            # theorem lines look like "Name.foo: <statement>"
+            if re.match(r"^\S+\.\S+: ", line) or re.match(r"^\S+: ", line):
+                out.write("  " + line + "\n")
+
+        out.write(f"\nFull results saved to {EXPLORE_JSON}")
+        return out.getvalue()
+
+def summarize_sledgehammer(results: str, arguments: str) -> str:
+    with io.StringIO() as out:
+        out.write("sledgehammer")
+        if arguments:
+            out.write(f" [{arguments}]")
+        out.write(":\n")
+        out.write(results.strip())
+        out.write(f"\n\nFull results saved to {EXPLORE_JSON}")
+        return out.getvalue()
+
+def summarize_proof(results: str, arguments: str) -> str:
+    with io.StringIO() as out:
+        out.write(f"proof attempt '{arguments}':\n")
+        out.write(results.strip())
+        out.write(f"\n\nFull results saved to {EXPLORE_JSON}")
+        return out.getvalue()
+
+def summarize(query: str, results: str, arguments: str, success: bool, message: str) -> str:
+    if not success:
+        return f"explore ({query}) failed: {message}\n\nFull details saved to {EXPLORE_JSON}"
+
+    if query == "find_theorems":
+        return summarize_find_theorems(results, arguments)
+    elif query == "sledgehammer":
+        return summarize_sledgehammer(results, arguments)
+    elif query == "proof":
+        return summarize_proof(results, arguments)
+    else:
+        return f"explore ({query}):\n{results.strip()}\n\nFull results saved to {EXPLORE_JSON}"
+
+def main():
+    try:
+        input_data = json.load(sys.stdin)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
+        sys.exit(0)
+
+    with open(EXPLORE_JSON, "w") as f:
+        json.dump(input_data, f, indent=2)
+
+    tool_input = input_data.get("tool_input", {})
+    raw_response = input_data.get("tool_response")
+
+    if isinstance(raw_response, str):
+        import re as _re
+        m = _re.search(r"saved to ([^\n]+\.txt)", raw_response)
+        if not m:
+            sys.exit(0)
+        with open(m.group(1)) as f:
+            text = f.read()
+    else:
+        text = raw_response[0].get("text", "{}")
+
+    response = json.loads(text)
+
+    query = tool_input.get("query", "")
+    arguments = tool_input.get("arguments", "")
+    success = response.get("success", False)
+    results = response.get("results", "")
+    message = response.get("message", "")
+
+    summary = summarize(query, results, arguments, success, message)
+
+    out = {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "updatedToolOutput": [{"type": "text", "text": summary}],
+            "additionalContext": f"Full explore response saved to {EXPLORE_JSON}",
+        }
+    }
+    json.dump(out, sys.stdout)
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()

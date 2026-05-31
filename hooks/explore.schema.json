@@ -1,0 +1,34 @@
+{
+  "name": "mcp__plugin_isabelle-plugin_iq__explore",
+  "description": "I/Q explore. Run a query for non-invasive proof exploration: Try Isar proof scripts, find theorems, run sledgehammer, at any point in a document.",
+  "parameters": {
+    "additionalProperties": false,
+    "properties": {
+      "query": {
+        "description": "Query type to execute. For the `proof` query type, you need to import Isar_Explore.thy from the I/Q plugin root directory.",
+        "enum": ["proof", "sledgehammer", "find_theorems"]
+      },
+      "command_selection": {
+        "description": "Method of specifying the command AFTER which the proof exploration should be applied. Values are: * 'current', to apply query after current command. * 'file_offset', so specify command after which query should happen via file and absolute offset. Uses 'path' and 'offset' argument. * 'file_pattern', to specify command after which query should happen via filenme and a unique substring. Uses 'path' and 'pattern argument.",
+        "enum": ["current", "file_offset", "file_pattern"]
+      },
+      "arguments": {
+        "description": "Arguments for the query. For 'proof': Isar proof methods, required. Example: 'by simp' or 'apply blast'. For 'sledgehammer': Prover names - optional, uses defaults if empty. Examples: 'cvc5 verit z3 e spass vampire zipperposition'. For 'find_theorems': search criteria - required. Examples: * Goal term pattern '\\<open>(_ :: unat) = (_ :: unat)\\<close>' (MUST include cartouche or quotes around the pattern) * Theorem name pattern, 'name:PATTERN'.",
+        "type": "string"
+      },
+      "offset": {
+        "description": "Character offset of command AFTER which to apply the query. Required if 'command_selection' is 'file_offset'.",
+        "type": "integer"
+      },
+      "path": {
+        "description": "File to run the query in. Required if 'command_selection' is 'file_offset' or 'file_pattern'. MUST be a full file path with extension.",
+        "type": "string"
+      },
+      "pattern": {
+        "description": "Substring pattern to match command AFTER which to apply the query. Required if 'command_selection' is 'file_pattern'. Must match exactly once in the specified file. If you want to fix a sorry or replace an existing proof step, use the substring of the command/proof step BEFORE the step to rework.",
+        "type": "string"
+      }
+    },
+    "required": ["query", "command_selection"]
+  }
+}
