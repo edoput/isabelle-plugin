@@ -336,3 +336,27 @@ find_theorems '\<open>?x - ?y = 0\<close>': 15 theorem(s) found (15 displayed)
    Search for any theorem matching the term ?x - ?y = 0. This example uses the named placeholders ?x and ?y in place of an identifier. This term shape will match when the subterms matched by ?x and ?y are different.
    </commentary>
    </example>
+
+## Generalize
+
+When searching by term generalize the theorem statement.
+
+<example>
+   <call>
+   {
+       "query": "find_theorems",
+       "command_selection": "current",
+       "arguments": "\<open>ctrace_of diverge _\<close>"
+   }
+   </call>
+   <output>
+find_theorems '\<open>ctrace_of diverge Div\<close>': 1 theorem(s) found (1 displayed)
+       ctree_simon_refinement.ctrace_of_diverge: ctrace_of diverge ?anything
+
+     Full results saved to explore.json
+   </output>
+   <commentary>
+   Instead of searching for ctrace_of diverge Div, generalize to ctrace_of diverge _ . The term ctrace_of diverge Div is too specific to be a reasonable theorem already proved.
+   </commentary>
+   </example>
+</example>
