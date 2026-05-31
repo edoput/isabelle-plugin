@@ -1,6 +1,6 @@
 ---
 name: find-in-isabelle
-description: Use when working with Isabelle/HOL. Describes how to find definitions and theorems directly in isabelle.
+description: Use before searching for a definition or a theorem in Isabelle. Covers read_file Search mode for locating definitions (datatype, fun, coinductive, etc.) and find_theorems for locating lemmas by name or term shape.
 ---
 
 # Definitions
