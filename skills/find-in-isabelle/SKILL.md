@@ -1,6 +1,6 @@
 ---
 name: find-in-isabelle
-description: Use before searching for a definition or a theorem in Isabelle. Covers read_file Search mode for locating definitions (datatype, fun, coinductive, etc.) and find_theorems for locating lemmas by name or term shape.
+description: Use before searching for a definition or a theorem in Isabelle. Covers usage of tool read_file in Search mode for locating definitions (datatype, fun, coinductive, etc.) and tool find_theorems for locating lemmas by name or term shape.
 ---
 
 # Definitions
@@ -72,73 +72,72 @@ fun, primrec, primcorec, corec. To search against these commands use the followi
 }
 ```
 
-<example>
-<call>
-{
-    "path": "traces.thy",
-    "mode": "Search",
-    "pattern": "codatatype.*ctrace",
-    "context_lines": 4
-}
-</call>
-<output>
-/path/to/traces.thy-11-  - infinite activity
-/path/to/traces.thy-12-  - termination
-/path/to/traces.thy-13-  - divergence
-/path/to/traces.thy-14-*)
-/path/to/traces.thy:15:codatatype ('e, 's) ctrace =
-/path/to/traces.thy-16-  is_TCons : TCons 'e "('e, 's) ctrace" |
-/path/to/traces.thy-17-  is_Term : Term 's |
-/path/to/traces.thy-18-  is_Div : Div
-/path/to/traces.thy-19-
-</output>
-<commentary>
-Search against content of traces.thy for a line matching the regex codatatype.*ctrace . Inlcudes 4 lines before and after line match. The output lists the content of traces.thy that contains the matching line codatatype ('e, 's) ctrace. 
-</commentary>
+<examples>
+  <example index="1">
+  <call>
+  {
+      "path": "traces.thy",
+      "mode": "Search",
+      "pattern": "codatatype.*ctrace",
+      "context_lines": 4
+  }
+  </call>
+  <output>
+  /path/to/traces.thy-11-  - infinite activity
+  /path/to/traces.thy-12-  - termination
+  /path/to/traces.thy-13-  - divergence
+  /path/to/traces.thy-14-*)
+  /path/to/traces.thy:15:codatatype ('e, 's) ctrace =
+  /path/to/traces.thy-16-  is_TCons : TCons 'e "('e, 's) ctrace" |
+  /path/to/traces.thy-17-  is_Term : Term 's |
+  /path/to/traces.thy-18-  is_Div : Div
+  /path/to/traces.thy-19-
+  </output>
+  <commentary>
+  Search against content of traces.thy for a line matching the regex codatatype.*ctrace . Inlcudes 4 lines before and after line match. The output lists the content of traces.thy that contains the matching line codatatype ('e, 's) ctrace. 
+  </commentary>
 </example>
-
-<example>
-<call>
-{
-    "path": "traces.thy",
-    "mode": "Search",
-    "pattern": "coinductive ctrace_of",
-    "context_lines": 10
-}
-</call>
-<output>
-/path/to/traces.thy-18-  is_Div : Div
-/path/to/traces.thy-19-
-/path/to/traces.thy-20-lemma is_TConsE [elim]:
-/path/to/traces.thy-21-  "⟦ is_TCons tr; ⋀ e tr'. tr = TCons e tr' ⟹ Q⟧ ⟹ Q"
-/path/to/traces.thy-22-  by (metis is_TCons_def)
-/path/to/traces.thy-23-
-/path/to/traces.thy-24-lemma is_TermE [elim]:
-/path/to/traces.thy-25-  "⟦ is_Term tr; ⋀ x. tr = Term x ⟹ Q⟧ ⟹ Q"
-/path/to/traces.thy-26-  by (metis is_Term_def)
-/path/to/traces.thy-27-
-/path/to/traces.thy:28:coinductive ctrace_of :: "('e, 's, 'b) ctree ⇒ ('e, 's) ctrace ⇒ bool"
-/path/to/traces.thy-29-  where
-/path/to/traces.thy-30-trace_of_RetI [intro]: "ctrace_of (Ret x) (Term x)" |
-/path/to/traces.thy-31-― ‹implies that the equation P = τ P will give use ‹Div›? Yes because we are doing a gp construction.›
-/path/to/traces.thy-32-trace_of_SilI [intro]: "ctrace_of P t ⟹ ctrace_of (τ P) t" |
-/path/to/traces.thy-33-― ‹This allows for nondeterministic choice which makes it a relation.›
-/path/to/traces.thy-34-trace_of_VisI [intro]: "⟦ ∃ P ∈⇩b (K e). ctrace_of P t ⟧⟹ ctrace_of (Vis K) (TCons e t)"
-/path/to/traces.thy-35-monos bBex_mono
-/path/to/traces.thy-36-
-/path/to/traces.thy-37-lemma ctrace_of_coind [elim, consumes 1, case_names Ret Sil Vis, induct pred: "ctrace_of"]:
-/path/to/traces.thy-38-  assumes major: "φ P tr"
-</output>
-<commentary>
-Search against content of traces.thy for a line matching the string coinductive ctrace_of . Includes 10 lines before and after line match. The output lists the content of traces.thy that contains the matching line coinductive ctrace_of .
-</commentary>
-</example>
+<example index="2">
+  <call>
+  {
+      "path": "traces.thy",
+      "mode": "Search",
+      "pattern": "coinductive ctrace_of",
+      "context_lines": 10
+  }
+  </call>
+  <output>
+  /path/to/traces.thy-18-  is_Div : Div
+  /path/to/traces.thy-19-
+  /path/to/traces.thy-20-lemma is_TConsE [elim]:
+  /path/to/traces.thy-21-  "⟦ is_TCons tr; ⋀ e tr'. tr = TCons e tr' ⟹ Q⟧ ⟹ Q"
+  /path/to/traces.thy-22-  by (metis is_TCons_def)
+  /path/to/traces.thy-23-
+  /path/to/traces.thy-24-lemma is_TermE [elim]:
+  /path/to/traces.thy-25-  "⟦ is_Term tr; ⋀ x. tr = Term x ⟹ Q⟧ ⟹ Q"
+  /path/to/traces.thy-26-  by (metis is_Term_def)
+  /path/to/traces.thy-27-
+  /path/to/traces.thy:28:coinductive ctrace_of :: "('e, 's, 'b) ctree ⇒ ('e, 's) ctrace ⇒ bool"
+  /path/to/traces.thy-29-  where
+  /path/to/traces.thy-30-trace_of_RetI [intro]: "ctrace_of (Ret x) (Term x)" |
+  /path/to/traces.thy-31-― ‹implies that the equation P = τ P will give use ‹Div›? Yes because we are doing a gp construction.›
+  /path/to/traces.thy-32-trace_of_SilI [intro]: "ctrace_of P t ⟹ ctrace_of (τ P) t" |
+  /path/to/traces.thy-33-― ‹This allows for nondeterministic choice which makes it a relation.›
+  /path/to/traces.thy-34-trace_of_VisI [intro]: "⟦ ∃ P ∈⇩b (K e). ctrace_of P t ⟧⟹ ctrace_of (Vis K) (TCons e t)"
+  /path/to/traces.thy-35-monos bBex_mono
+  /path/to/traces.thy-36-
+  /path/to/traces.thy-37-lemma ctrace_of_coind [elim, consumes 1, case_names Ret Sil Vis, induct pred: "ctrace_of"]:
+  /path/to/traces.thy-38-  assumes major: "φ P tr"
+  </output>
+  <commentary>
+  Search against content of traces.thy for a line matching the string coinductive ctrace_of . Includes 10 lines before and after line match. The output lists the content of traces.thy that contains the matching line coinductive ctrace_of .
+  </commentary>
+  </example>
+</examples>
 
 # Theorems
 
 Find lemmas using the `explore` tool. There are two ways to search lemmas, by name or by term.
-
-
 
 ## Search theorems by name
 
@@ -154,54 +153,68 @@ You can search a theorem by substring match on the theorem name. Multiple names 
 
 Theorem names are predictable, they will contain the names of the constants they use.
 
-```
-lemma ctrace_of_diverge [simp]:
-  "ctrace_of diverge anything"
+<examples>
+  <example index="1">
+    <document>
+      <source>traces.thy</source>
+      <document_content>
+        lemma ctrace_of_diverge [simp]:
+          "ctrace_of diverge anything"
+        
+        lemma ctrace_of_magic_iff [iff]:
+          "ctrace_of magic x <--> False"
+      </document_content>
+    </document>
+    <call>
+    {
+        "query": "find_theorems",
+        "command_selection": "current",
+        "arguments": "name: ctrace_of name: diverge"
+    }
+    </call>
+    <output>
+    find_theorems 'name: ctrace_of name: diverge': 2 theorem(s) found (2 displayed)
+           name: "ctrace_of"
+           name: "diverge"
+           traces.ctrace_of_diverge: ctrace_of diverge ?anything
+           traces.ctrace_of_all_diverge: (∀tr. ctrace_of ?P tr) = (?P = diverge)
+    
+         Full results saved to explore.json
+    </output>
+  </example>
 
-lemma ctrace_of_magic_iff [iff]:
-  "ctrace_of magic x <--> False"
-```
-
-<example>
-<call>
-{
-    "query": "find_theorems",
-    "command_selection": "current",
-    "arguments": "name: ctrace_of name: diverge"
-}
-</call>
-<output>
-find_theorems 'name: ctrace_of name: diverge': 2 theorem(s) found (2 displayed)
-       name: "ctrace_of"
-       name: "diverge"
-       traces.ctrace_of_diverge: ctrace_of diverge ?anything
-       traces.ctrace_of_all_diverge: (∀tr. ctrace_of ?P tr) = (?P = diverge)
-
-     Full results saved to explore.json
-</output>
-</example>
-
-<example>
-<call>
-{
-    "query": "find_theorems",
-    "command_selection": "current",
-    "arguments": "name: ctrace_of name: magic"
-}
-</call>
-<output>
-find_theorems 'name: ctrace_of name: magic': 2 theorem(s) found (2 displayed)
-       name: "ctrace_of"
-       name: "magic"
-       refinement.ctrace_of_magic_iff: ctrace_of magic ?anything = False
-       refinement.ctrace_of_more_magic: ctrace_of more_magic ?anything = False
-
-     Full results saved to explore.json
-</output>
-<commentary>
-Search for a theorem by name. The theorem name must match both ctrace_of and magic.
-</commentary>
-</example>
+  <example index="2">
+    <document>
+      <source>traces.thy</source>
+      <document_content>
+      lemma ctrace_of_diverge [simp]:
+        "ctrace_of diverge anything"
+      
+      lemma ctrace_of_magic_iff [iff]:
+        "ctrace_of magic x <--> False"
+      </document_content>
+    </document>
+    <call>
+    {
+        "query": "find_theorems",
+        "command_selection": "current",
+        "arguments": "name: ctrace_of name: magic"
+    }
+    </call>
+    <output>
+    find_theorems 'name: ctrace_of name: magic': 2 theorem(s) found (2 displayed)
+           name: "ctrace_of"
+           name: "magic"
+           refinement.ctrace_of_magic_iff: ctrace_of magic ?anything = False
+           refinement.ctrace_of_more_magic: ctrace_of more_magic ?anything = False
+    
+         Full results saved to explore.json
+    </output>
+    <commentary>
+    Search for a theorem by name. The theorem name must match both ctrace_of and magic.
+    </commentary>
+  </example>
+</examples>
 
 ## Search theorems by term
 
@@ -272,7 +285,7 @@ find_theorems '\<open>ctrace_of (Sil _) _\<close>': 2 theorem(s) found (2 displa
      Full results saved to explore.json
    </output>
    <commentary>
-   Search for a theorem matching the term ctrace_of (Sil _) _
+   Search for a theorem matching the term ctrace_of (Sil _) _ . Arbitrary terms can be constructed using uthe placeholder _
    </commentary>
    </example>
 4. use schematic variables ?x when you want a reusable placeholder
@@ -360,3 +373,63 @@ find_theorems '\<open>ctrace_of diverge Div\<close>': 1 theorem(s) found (1 disp
    </commentary>
    </example>
 </example>
+
+## find_theorems is context sensitive
+
+explore is context dependent. Changing the command_selection parameter will change the output of the tool for both search by name and search by term.
+
+<examples>
+  <document>
+    <source>traces.thy</source>
+    <document_content>
+    lemma ctrace_of_diverge [simp]:
+      "ctrace_of diverge anything"
+    
+    lemma ctrace_of_magic_iff [iff]:
+      "ctrace_of magic x <--> False"
+
+    lemma ctrace_of_more_magic_iff [iff]:
+      "ctrace_of more_magic x <--> False"
+    </document_content>
+  </document>
+  <example index="1">
+    <call>
+    {
+        "query": "find_theorems",
+        "command_selection": "file_pattern",
+        "path": "traces.thy",
+        "pattern":  "lemma ctrace_of_diverge",
+        "arguments": "\<open>ctrace_of magic _\<close>"
+    }
+    </call>
+    <output>
+find_theorems '\<open>ctrace_of magic _\<close>': 0 theorem(s) found (0 displayed)
+     No theorems found.
+
+     Full results saved to explore.json
+    </output>
+    <commentary>
+The find_theorems call happens at the ctrace_of_diverge lemma. This means that ctrace_of_magic_iff is not processed yet and cannot be found.
+    </commentary>
+  </example>
+  <example index="2">
+    <call>
+    {
+        "query": "find_theorems",
+        "command_selection": "file_pattern",
+        "path": "traces.thy",
+        "pattern":  "lemma ctrace_of_more_magic",
+        "arguments": "\<open>ctrace_of magic _\<close>"
+    }
+    </call>
+    <output>
+find_theorems '\<open>ctrace_of magic _\<close>': 1 theorem(s) found (1 displayed)
+     traces.ctrace_of_magic_iff: ctrace_of magic ?x <--> False
+
+     Full results saved to explore.json
+    </output>
+    <commentary>
+The find_theorems call happens at the ctrace_of_more_magic lemma. This means that ctrace_of_magic_iff is processed yet and can be found.
+    </commentary>
+  </example>
+<examples>
